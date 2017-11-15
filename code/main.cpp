@@ -20,6 +20,12 @@ void createPlayers(int numPlayers) {
   player[numPlayers-1] = {"Bot", 0, (tile_t *) malloc(7*sizeof(tile_t))}; //bot
 }
 
+void free() {
+  free(game);
+  free(board);
+  free(players);
+}
+
 int main(int argc, char** argv)
 {
   createPlayers(3);

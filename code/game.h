@@ -3,6 +3,11 @@
 
 extern int DIMENSION = 15; //side length of the board
 
+typedef struct trieNode {
+	char value;
+	trie_node_t* nextLetters; //size 26 array
+} trie_node_t;
+
 typedef struct tile {
 	char value;
 } tile_t;

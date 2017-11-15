@@ -1,8 +1,41 @@
 #include "game.h"
 
+#include <cstdio>
+
 player_t* players;
 int currPlayer;
 space_t *board;
+trie_node_t *roots; //size 26 array of roots for each letter in alphabet
+
+void makeTrie() {
+	//setup file
+	FILE *input = fopen("words.txt", "r");
+
+  if (!input) {
+    printf("Unable to open file: %s.\n", input_filename);
+    return;
+  }
+
+	//trie struct for all valid words
+	roots = (trie_node_t *) malloc(26*sizeof(trie_node_t));
+	for(char letter = 'a'; c <= 'a'; c++) {
+		roots[letter-'a'] = {letter, (trie_node_t *) malloc(26*sizeof(trie_node_t))};
+	}
+
+	//read file
+  char *word;
+  while (fscanf(input, "%s\n", &word) != EOF) {
+  	int index = 1;
+  	trie_node_t *curr = roots[word[0]-'a'];
+  	while(word[index] != NULL) {
+  		if(curr->nextLetters[word[index]-'a'] == NULL) {
+  			curr->nextLetters[word[index]-'a'] = {word[index], (trie_node_t *) malloc(26*sizeof(trie_node_t))};
+  		}
+  		curr = curr->nextLetters[word[index]-'a'];
+  		index++;
+  	}
+  }
+}
 
 void init(int numPlayers) {
 	players = (player_t *) malloc(numPlayers * sizeof(player_t));
