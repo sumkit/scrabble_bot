@@ -1,139 +1,151 @@
 #include "game.h"
-
 #include <cstdio>
 
-player_t* players;
+player* players;
 int currPlayer;
-space_t *board;
-trie_node_t *roots; //size 26 array of roots for each letter in alphabet
+space *board;
+trieNode *roots; //size 26 array of roots for each letter in alphabet
+
+// int DIMENSION = 15; //side length of the board
 
 void makeTrie() {
 	//setup file
 	FILE *input = fopen("words.txt", "r");
 
   if (!input) {
-    printf("Unable to open file: %s.\n", input_filename);
+    printf("Unable to open file: %s.\n", "words.txt");
     return;
   }
 
 	//trie struct for all valid words
-	roots = (trie_node_t *) malloc(26*sizeof(trie_node_t));
-	for(char letter = 'a'; c <= 'a'; c++) {
-		roots[letter-'a'] = {letter, (trie_node_t *) malloc(26*sizeof(trie_node_t))};
+	roots = (trieNode *) malloc(26*sizeof(trieNode));
+	for(char letter = 'a'; letter <= 'a'; letter++) {
+		roots[letter-'a'].value = letter;
+		roots[letter-'a'].nextLetters = (trieNode *) malloc(26*sizeof(trieNode));
 	}
 
 	//read file
   char *word;
-  while (fscanf(input, "%s\n", &word) != EOF) {
+  while (fscanf(input, "%s\n", word) != EOF) {
   	int index = 1;
-  	trie_node_t *curr = roots[word[0]-'a'];
-  	while(word[index] != NULL) {
-  		if(curr->nextLetters[word[index]-'a'] == NULL) {
-  			curr->nextLetters[word[index]-'a'] = {word[index], (trie_node_t *) malloc(26*sizeof(trie_node_t))};
+  	trieNode curr = roots[word[0]-'a'];
+  	while(word[index] != 0) {
+  		if(curr.nextLetters[word[index]-'a'].value == 0) {
+  			curr.nextLetters[word[index]-'a'].value = word[index]; 
+  			curr.nextLetters[word[index]-'a'].nextLetters = (trieNode *) malloc(26*sizeof(trieNode));
   		}
-  		curr = curr->nextLetters[word[index]-'a'];
+  		curr = curr.nextLetters[word[index]-'a'];
   		index++;
   	}
   }
 }
 
 void init(int numPlayers) {
-	players = (player_t *) malloc(numPlayers * sizeof(player_t));
+	players = (player *) malloc(numPlayers * sizeof(player));
 }
 
 void nextPlayer() {
 	currPlayer++;
 }
-player_t *getCurrentPlayer() {
-	return &(players[currPlayer]);
-}
 
 bool adjacentAbove(int row, int col) {
-	space_t space = board[row*DIMENSIONS + col];
-	if(space -> tile != NULL) {
-		if(space->row == 0) return false;
-		if(board[(row-1)*DIMENSIONS + col] != NULL) return true;
+	space sp = board[row*DIMENSION + col];
+	if(sp.tile != NULL) {
+		if(sp.row == 0) return false;
+		if(board[(row-1)*DIMENSION + col].tile == 0) return true;
 	} 
 	return false;
 }
 bool adjacentBelow(int row, int col) {
-	if(space -> tile != NULL) {
-		if(space->row == DIMENSIONS-1) return false;
-		if(board[(row+1)*DIMENSIONS + col] != NULL) return true;
+	space sp = board[row*DIMENSION + col];
+	if(sp.tile != NULL) {
+		if(sp.row == DIMENSION-1) return false;
+		if(board[(row+1)*DIMENSION + col].tile == 0) return true;
 	} 
 	return false;
 }
 bool adjacentLeft(int row, int col) {
-	if(space -> tile != NULL) {
-		if(space->col == 0) return false;
-		if(board[row*DIMENSIONS + col - 1] != NULL) return true;
+	space sp = board[row*DIMENSION + col];
+	if(sp.tile != NULL) {
+		if(sp.col == 0) return false;
+		if(board[row*DIMENSION + col - 1].tile == 0) return true;
 	} 
 	return false;
 }
 bool adjacentRight(int row, int col) {
-	if(space -> tile != NULL) {
-		if(space->col == DIMENSIONS-1) return false;
-		if(board[row*DIMENSIONS + col + 1] != NULL) return true;
+	space sp = board[row*DIMENSION + col];
+	if(sp.tile != NULL) {
+		if(sp.col == DIMENSION-1) return false;
+		if(board[row*DIMENSION + col + 1].tile == 0) return true;
 	} 
 	return false;
 }
-bool validMove(move_t* move) {
-	return (move->start >= 0) && (move->end < DIMENSIONS);
+bool validMove(move move) {
+	return (move.start >= 0) && (move.end < DIMENSION);
 }
 
 //return best word surrounding a tile already on the board using the player's tiles
-char* makeWord(char letter, tile_t *tiles) {
+char* makeWord(char letter, tile *tiles) {
 	char* best = NULL;
-	player_t *currPlayer = players[currPlayer];
-	for(int i = 0; i < currPlayer->numTiles; i++) {	
+	player currPlayer = players[currPlayer];
+	for(int i = 0; i < currPlayer.numTiles; i++) {	
 	}
 	return best;
 }
 
-move_t* findBest() {
-	player_t *player = players[currPlayer];
-	move_t best = {NULL, -1, -1, 0};
-	for(int r = 0; r < DIMENSIONS; r++) { //row iteration
+move findBest() {
+	player player = players[currPlayer];
+	move best = {NULL, -1, -1, 0};
+	for(int r = 0; r < DIMENSION; r++) { //row iteration
 		//order from left to right
 		int score = 0;
-		for(int c = 0; c < DIMENSIONS; c++) { //col iteration
-			int index = r*DIMENSIONS+c;
-			tile_t *tile = board[index].tile;
+		for(int c = 0; c < DIMENSION; c++) { //col iteration
+			int index = r*DIMENSION+c;
+			tile *tile = board[index].tile;
 			if(tile != NULL) {
 				//look left and right of tile to form horizontal word
 				if(adjacentLeft(r, c) && adjacentRight(r, c)) {
-					makeWord(tile->value, player->tiles);
+					makeWord(tile->value, player.tiles);
 				}
 			}
-			best = {NULL, r, c, score+= }; //update best option
+			//update best option
 		}
 	}
-	for(int c = 0; c < DIMENSIONS; c++) {
+	for(int c = 0; c < DIMENSION; c++) {
 		//order from top to bottom
-		for(int r = 0; c < DIMENSIONS; r++) {
+		for(int r = 0; c < DIMENSION; r++) {
+			int index = r*DIMENSION+c;
+			tile *tile = board[index].tile;
 			if(board[index].tile != NULL) {
 				//look above and below of tile to form horizontal word
 				if(adjacentAbove(r, c) && adjacentBelow(r, c)) {
-					makeWord(tile->value, player->tiles);
+					makeWord(tile->value, player.tiles);
 				}
 			}
+			//update best option
 		}
 	}
-	return &best;
+	return best;
 }
 
-void makeMove(player_t* player) {
-	if(!validMove()) return;
-	move_t *move;
-	if() {
+void makeMove(player* player) {
+	move move;
+	if(currPlayer == 3) {
 		//bot's turn
 		move = findBest();
 	} else {
 		//human's turn -> get input
+		while(move.tiles == NULL || !validMove(move)) {
+			//TODO show error for invalid moves
+		}
 	}
 
 	//fill in board with move
 	for(int i = move.start; i <= move.end; i++) {
 		board[i].tile = &(move.tiles[i]);
 	} 
+}
+
+bool gameOver() {
+	return false;
 }

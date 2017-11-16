@@ -1,48 +1,54 @@
 #ifndef _GAME_H
 #define _GAME_H
 
-extern int DIMENSION = 15; //side length of the board
+#include <stdlib.h> 
+#include <string>
+#include <cstring>
 
-typedef struct trieNode {
+const int DIMENSION = 15; //side length of the board
+const int NUMTILES = 100;
+
+struct trieNode {
 	char value;
-	trie_node_t* nextLetters; //size 26 array
-} trie_node_t;
+	trieNode* nextLetters; //size 26 array
+};
 
-typedef struct tile {
+struct tile {
 	char value;
-} tile_t;
+};
 
-typedef struct player {
-	char* name;
+struct player {
+	string name;
 	int score;
-	tile_t* tiles;
+	tile* tiles;
 	int numTiles; //up to 7 tiles at any time
-} player_t;
+};
 
-typedef struct space {
+struct space {
 	int row;
 	int col;
-	tile_t *tile; //pointer to tile, null if empty
+	tile *tile; //pointer to tile, null if empty
 	//int height; for when we do "Upwords"
-} space_t;
+};
 
-typedef struct move {
-	tile_t* tiles;
+struct move {
+	tile* tiles;
 	int start; //index of start
 	int end; //index of end
 	int score;
-} move_t;
+};
 
-typedef struct {
-	player_t* players; //array of players (2-4)
-	tile_t* tiles; //list of all tiles still "in the bag"
-	board_t* board; //pointer to board
-} game_t;
+struct game {
+	player* players; //array of players (2-4)
+	tile* tiles; //list of all tiles still "in the bag"
+	space* board; //array of spaces to represent board
+	void init(int numPlayers);
+	void makeMove(player* player);
+	player *getCurrentPlayer();
+	bool gameOver(); //return true if game is over
+};
 
-void init(int numPlayers);
+void makeMove(player *player);
 void nextPlayer();
-bool validMove(move_t* move);
-void makeMove(player_t* player);
-bool gameOver(); //return true if game is over
 
 #endif 
