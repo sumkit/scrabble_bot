@@ -1,9 +1,8 @@
-#include <stdlib.h>
 #include <stdio.h>
-#include <getopt.h>
+// #include <getopt.h>
 
-#include "refRenderer.h"
-#include "cudaRenderer.h"
+// #include "refRenderer.h"
+// #include "cudaRenderer.h"
 #include "game.h"
 
 game* game;
