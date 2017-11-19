@@ -1,7 +1,7 @@
 #ifndef _GAME_H
 #define _GAME_H
 
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <string>
 #include <cstring>
 
@@ -14,7 +14,8 @@ struct trieNode {
 };
 
 struct tile {
-	char value;
+	char letter;
+	int points;
 };
 
 struct player {
@@ -33,6 +34,7 @@ struct space {
 
 struct move {
 	tile* tiles;
+	int numTiles;
 	int start; //index of start
 	int end; //index of end
 	int score;
@@ -42,7 +44,7 @@ struct game {
 	player* players; //array of players (2-4)
 	tile* tiles; //list of all tiles still "in the bag"
 	space* board; //array of spaces to represent board
-	void init(int numPlayers);
+	void init();
 	void makeMove(player* player);
 	player *getCurrentPlayer();
 	bool gameOver(); //return true if game is over
@@ -51,4 +53,4 @@ struct game {
 void makeMove(player *player);
 void nextPlayer();
 
-#endif 
+#endif

@@ -7,6 +7,7 @@ int currPlayer;
 space *board;
 trieNode *roots; //size 26 array of roots for each letter in alphabet
 int top, bottom, left, right; //bounding box of span of tiles
+tile *tiles;
 
 void makeTrie() {
 	//setup file
@@ -31,7 +32,7 @@ void makeTrie() {
   	trieNode curr = roots[word[0]-'a'];
   	while(word[index] != 0) {
   		if(curr.nextLetters[word[index]-'a'].value == 0) {
-  			curr.nextLetters[word[index]-'a'].value = word[index]; 
+  			curr.nextLetters[word[index]-'a'].value = word[index];
   			curr.nextLetters[word[index]-'a'].nextLetters = (trieNode *) malloc(26*sizeof(trieNode));
   		}
   		curr = curr.nextLetters[word[index]-'a'];
@@ -40,14 +41,14 @@ void makeTrie() {
   }
 }
 
-void init(int numPlayers) {
-	players = (player *) malloc(numPlayers * sizeof(player));
-
+void init() {
 	//guaranteed to be updated after player 1 makes move
 	left = DIMENSION;
 	right = -1;
 	top = DIMENSION;
 	bottom = -1;
+
+	//do initial tile distribution
 }
 
 void nextPlayer() {
@@ -59,7 +60,7 @@ bool adjacentAbove(int row, int col) {
 	if(sp.tile != NULL) {
 		if(sp.row == 0) return false;
 		if(board[(row-1)*DIMENSION + col].tile == 0) return true;
-	} 
+	}
 	return false;
 }
 bool adjacentBelow(int row, int col) {
@@ -67,7 +68,7 @@ bool adjacentBelow(int row, int col) {
 	if(sp.tile != NULL) {
 		if(sp.row == DIMENSION-1) return false;
 		if(board[(row+1)*DIMENSION + col].tile == 0) return true;
-	} 
+	}
 	return false;
 }
 bool adjacentLeft(int row, int col) {
@@ -75,7 +76,7 @@ bool adjacentLeft(int row, int col) {
 	if(sp.tile != NULL) {
 		if(sp.col == 0) return false;
 		if(board[row*DIMENSION + col - 1].tile == 0) return true;
-	} 
+	}
 	return false;
 }
 bool adjacentRight(int row, int col) {
@@ -83,7 +84,7 @@ bool adjacentRight(int row, int col) {
 	if(sp.tile != NULL) {
 		if(sp.col == DIMENSION-1) return false;
 		if(board[row*DIMENSION + col + 1].tile == 0) return true;
-	} 
+	}
 	return false;
 }
 bool validMove(move move) {
@@ -135,12 +136,13 @@ std::vector<std::string> permute(std::string str) {
  * negative - amount in negative direction (left/up) of a board tile to check
  * positive - amount in positive direction (right/down) of a board tile to check
  */
-std::vector<std::string> getPermutations(int length, int boardIndex, int negative, int positive) {
+std::vector<std::string> getPermutations(int length, int boardIndex,
+	int negative, int positive) {
 	tile* tiles = players[currPlayer].tiles;
 	int numTiles = players[currPlayer].numTiles;
 	std::string str;
 	for(int i = 0; i < numTiles; i++) {
-		str+=tiles[i].value;
+		str+=tiles[i].points;
 	}
 	std::vector<std::string> v = permute(str);
 	std::vector<std::string> res;
@@ -149,17 +151,34 @@ std::vector<std::string> getPermutations(int length, int boardIndex, int negativ
 		//replace letters in temp with tiles on board
 		for(int j = boardIndex-negative; j <= boardIndex+positive; j++) {
 			if(board[j].tile != NULL) {
-				temp = temp.replace(boardIndex+positive-j, 1, board[j].tile->value, 0, 1);
-			}			
+				temp = temp.replace(boardIndex+positive-j, 1,
+					std::string (1, board[j].tile->letter), 0, 1);
+			}
 		}
 		if(validWord(temp)) res.insert(res.end(), temp);
 	}
 	return res;
 }
 
+int calculateScore(move move) {
+	int score = 0;
+	tile *tiles = move.tiles;
+	int numTiles = move.numTiles;
+	bool horizontal = (move.end - move.start == numTiles);
+	for(int i = 0; i < numTiles; i++) {
+		int thisPoints = tiles[i].points;
+		//check if special tile on board
+		if(horizontal) {
+			//if(board[move.start + i] == double word score)
+		} else {}
+		score += thisPoints;
+	}
+	return score;
+}
+
 move findBest() {
 	player player = players[currPlayer];
-	move best = {NULL, -1, -1, 0};
+	move best = {NULL, 0, -1, -1, 0};
 	for(int r = left; r <= right; r++) { //row iteration
 		int score = 0;
 		for(int c = top; c <= bottom; c++) { //col iteration
@@ -183,7 +202,9 @@ move findBest() {
 			if(tile != NULL) {
 				for(int l = 7; l >= 1; l--) {
 					//look 7 left and 7 right of tile
-					std::vector<std::string> permutations = getPermutations(i);
+					std::vector<std::string> permutations = getPermutations(l, index, l, 7-l);
+					std::vector<std::string> permutations2 = getPermutations(l, index, 7-l, l);
+					permutations.insert(permutations.begin(), permutations2.begin(), permutations2.end());
 				}
 			}
 			//update best option
@@ -208,7 +229,7 @@ void makeMove(player* player) {
 	//fill in board with move
 	for(int i = move.start; i <= move.end; i++) {
 		board[i].tile = &(move.tiles[i]);
-	} 
+	}
 }
 
 bool gameOver() {
