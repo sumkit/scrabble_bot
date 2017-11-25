@@ -1,6 +1,6 @@
 APP_NAME=scrabble_bot
 
-OBJS=scrabble_bot.o
+OBJS=main.o game.o
 
 default: $(APP_NAME)
 

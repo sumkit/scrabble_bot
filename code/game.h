@@ -1,9 +1,6 @@
 #include <string>
 #include <cstring>
 
-// #ifndef GAME_H
-// #define GAME_H
-
 class Game {
 private:
 	player* players; //array of players (2-4 including bot)
@@ -22,5 +19,3 @@ public:
 	bool validMove(move move);
 	move findBest();
 };
-
-// #endif
