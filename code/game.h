@@ -1,56 +1,27 @@
-#ifndef _GAME_H
-#define _GAME_H
-
-#include <stdlib.h>
 #include <string>
 #include <cstring>
 
-const int DIMENSION = 15; //side length of the board
-const int NUMTILES = 100;
+#ifndef GAME_H
+#define GAME_H
 
-struct trieNode {
-	char value;
-	trieNode* nextLetters; //size 26 array
-};
-
-struct tile {
-	char letter;
-	int points;
-};
-
-struct player {
-	std::string name;
-	int score;
-	tile* tiles;
-	int numTiles; //up to 7 tiles at any time
-};
-
-struct space {
-	int row;
-	int col;
-	tile *tile; //pointer to tile, null if empty
-	//int height; for when we do "Upwords"
-};
-
-struct move {
-	tile* tiles;
-	int numTiles;
-	int start; //index of start
-	int end; //index of end
-	int score;
-};
-
-struct game {
-	player* players; //array of players (2-4)
+class Game {
+private:
+	player* players; //array of players (2-4 including bot)
+	trieNode *roots; //size 26 array of roots for each letter in alphabet
+	int top, bottom, left, right; //bounding box of span of tiles
+	int currPlayer;
 	tile* tiles; //list of all tiles still "in the bag"
 	space* board; //array of spaces to represent board
+public:
+	Game(player* players, tile* tiles, space* board);
 	void init();
 	void makeMove(player* player);
 	player *getCurrentPlayer();
 	bool gameOver(); //return true if game is over
+	void nextPlayer();
+	bool validMove(move move);
+	bool validWord(std::string str);
+	move findBest();
 };
-
-void makeMove(player *player);
-void nextPlayer();
 
 #endif

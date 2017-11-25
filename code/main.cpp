@@ -2,19 +2,14 @@
 
 // #include "refRenderer.h"
 // #include "cudaRenderer.h"
+#include "main.h"
 #include "game.h"
 
-game* game;
-player* players;
-space* board;
-tile* tiles;
-
-// int DIMENSION = 15; //side length of the board
-
-void createPlayers(int numPlayers) {
-  players = (player *) malloc(numPlayers*sizeof(player));
+player* createPlayers(int numPlayers) {
+  player* players = (player *) malloc(numPlayers*sizeof(player));
   for(int i = 0; i < numPlayers-1; i++) {
-    players[i].name = "Player "+std::to_string(i+1);
+    // players[i].name = "Player "+std::to_string(i+1);
+    players[i].name = "Player";
     players[i].score = 0;
     players[i].tiles = (tile *) malloc(7*sizeof(tile));
     players[i].numTiles = 0; //need to fill with 7
@@ -23,10 +18,11 @@ void createPlayers(int numPlayers) {
   players[numPlayers-1].score = 0;
   players[numPlayers-1].tiles = (tile *) malloc(7*sizeof(tile));
   players[numPlayers-1].numTiles = 0; //need to fill with 7
+  return players;
 }
 
-void createTiles() {
-  tiles = (tile *) malloc(NUMTILES*sizeof(tile));
+tile* createTiles() {
+  tile* tiles = (tile *) malloc(NUMTILES*sizeof(tile));
 	int tileIndex = 0;
 	for(int i = 0; i < 2; i++) {
 		tile t;
@@ -206,31 +202,26 @@ void createTiles() {
 	t_z.letter = 'z';
 	t_z.points = 10;
 	tiles[tileIndex] = t_z;
-}
 
-void free() {
-  free(game);
-  free(board);
-  free(players);
+	return tiles;
 }
 
 int main(int argc, char** argv)
 {
-  createPlayers(3); //TODO process input for number of players
-  board = (space *) calloc(DIMENSION*DIMENSION, sizeof(board));
-  createTiles();
-  game->players = players;
-  game->tiles = tiles;
-  game->board = board;
-  game->init();
+  player* players = createPlayers(3); //TODO process input for number of players
+  tile* tiles = createTiles();
+  space* board = (space *) calloc(DIMENSION*DIMENSION, sizeof(board));
+  Game game(players, tiles, board);
+  game.init();
   while(1) {
-    game->makeMove(game->getCurrentPlayer());
+    game.makeMove(game.getCurrentPlayer());
 
     //TODO update GUI
 
-    if(game->gameOver()) {
-      return 0;
-    }
+    if(game.gameOver()) break;
   }
+  free(tiles);
+  free(board);
+  free(players);
   return 0;
 }
