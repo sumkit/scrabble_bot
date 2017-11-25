@@ -5,6 +5,9 @@
 const int DIMENSION = 15; //side length of the board
 const int NUMTILES = 100;
 
+#ifndef GAME_H
+#define GAME_H
+
 struct trieNode {
 	char value;
 	trieNode* nextLetters; //size 26 array
@@ -36,3 +39,5 @@ struct move {
 	int end; //index of end
 	int score;
 };
+
+#endif

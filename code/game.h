@@ -1,8 +1,8 @@
 #include <string>
 #include <cstring>
 
-#ifndef GAME_H
-#define GAME_H
+// #ifndef GAME_H
+// #define GAME_H
 
 class Game {
 private:
@@ -20,8 +20,7 @@ public:
 	bool gameOver(); //return true if game is over
 	void nextPlayer();
 	bool validMove(move move);
-	bool validWord(std::string str);
 	move findBest();
 };
 
-#endif
+// #endif
