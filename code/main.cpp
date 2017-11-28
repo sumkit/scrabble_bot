@@ -208,7 +208,8 @@ tile* createTiles() {
 
 int main(int argc, char** argv)
 {
-  player* players = createPlayers(3); //TODO process input for number of players
+  int numPlayers = 3; //TODO process input for number of players
+  player* players = createPlayers(numPlayers); 
   tile* tiles = createTiles();
   space* board = (space *) calloc(DIMENSION*DIMENSION, sizeof(board));
   Game game(players, tiles, board);
@@ -219,9 +220,23 @@ int main(int argc, char** argv)
     //TODO update GUI
 
     if(game.gameOver()) break;
+    else game.nextPlayer();
   }
+  
+  //compute winner
+  int maxScore = 0;
+  player winner;
+  for(int i = 0; i < numPlayers; i++) {
+  	if(players[i].score > maxScore) {
+  		winner = players[i];
+  	}
+  }
+
+  //announce winner in GUI
+  
   free(tiles);
   free(board);
   free(players);
+
   return 0;
 }
