@@ -7,10 +7,11 @@ private:
 	trieNode *roots; //size 26 array of roots for each letter in alphabet
 	int top, bottom, left, right; //bounding box of span of tiles
 	int currPlayer;
+	int numPlayers;
 	tile* tiles; //list of all tiles still "in the bag"
 	space* board; //array of spaces to represent board
 public:
-	Game(player* players, tile* tiles, space* board);
+	Game(player* players, tile* tiles, space* board, int numPlayers);
 	void init();
 	void makeMove(player* player);
 	player *getCurrentPlayer();

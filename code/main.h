@@ -19,7 +19,7 @@ struct tile {
 };
 
 struct player {
-	std::string name;
+	char* name;
 	int score;
 	tile* tiles;
 	int numTiles; //up to 7 tiles at any time

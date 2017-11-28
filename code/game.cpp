@@ -7,13 +7,15 @@ player* players; //array of players (2-4 including bot)
 trieNode *roots; //size 26 array of roots for each letter in alphabet
 int top, bottom, left, right; //bounding box of span of tiles
 int currPlayer;
-tile* tiles; //list of all tiles still "in the bag"
+tile* gameTiles; //list of all tiles still "in the bag"
 space* board; //array of spaces to represent board
+int numPlayers;
 
-Game::Game(player* p, tile *t, space *b) {
+Game::Game(player* p, tile *t, space *b, int num) {
 	players = p;
-	tiles = t;
+	gameTiles = t;
 	board = b;
+	numPlayers = num;
 }
 
 void makeTrie() {
@@ -54,10 +56,8 @@ void Game::init() {
 	right = -1;
 	top = DIMENSION;
 	bottom = -1;
-
-	//do initial tile distribution
+	currPlayer = 0;
 }
-
 void Game::nextPlayer() {
 	currPlayer++;
 }
@@ -112,13 +112,12 @@ player* Game::getCurrentPlayer() {return &(players[currPlayer]);}
  * negative - amount in negative direction (left/up) of a board tile to check
  * positive - amount in positive direction (right/down) of a board tile to check
  */
-std::vector<std::string> getPermutations(int length, int boardIndex,
-	int negative, int positive) {
-	tile* tiles = players[currPlayer].tiles;
+std::vector<std::string> getPermutations(int length, int boardIndex, int negative, int positive) {
+	tile* _tiles = players[currPlayer].tiles;
 	int numTiles = players[currPlayer].numTiles;
 	std::string str;
 	for(int i = 0; i < numTiles; i++) {
-		str+=tiles[i].points;
+		str+=_tiles[i].letter;
 	}
 	std::vector<std::string> v = permute(str);
 	std::vector<std::string> res;
@@ -138,11 +137,11 @@ std::vector<std::string> getPermutations(int length, int boardIndex,
 
 int calculateScore(move move) {
 	int score = 0;
-	tile *tiles = move.tiles;
+	tile *_tiles = move.tiles;
 	int numTiles = move.numTiles;
 	bool horizontal = (move.end - move.start == numTiles);
 	for(int i = 0; i < numTiles; i++) {
-		int thisPoints = tiles[i].points;
+		int thisPoints = _tiles[i].points;
 		//check if special tile on board
 		if(horizontal) {
 			//if(board[move.start + i] == double word score)
@@ -154,21 +153,30 @@ int calculateScore(move move) {
 
 move Game::findBest() {
 	player player = players[currPlayer];
-	move best = {NULL, 0, -1, -1, 0};
+	move best = {NULL, 0, 0,0, 0};
 	for(int r = left; r <= right; r++) { //row iteration
 		int score = 0;
 		for(int c = top; c <= bottom; c++) { //col iteration
 			int index = r*DIMENSION+c;
 			tile *tile = board[index].spaceTile;
 			if(tile != NULL) {
+				move temp;
 				for(int l = 7; l >= 1; l--) {
-					//look 7 to above and 7 below tile
+					//look l above and l below tile
 					std::vector<std::string> permutations = getPermutations(l, index, l, 7-l);
 					std::vector<std::string> permutations2 = getPermutations(l, index, 7-l, l);
 					permutations.insert(permutations.begin(), permutations2.begin(), permutations2.end());
+					//find best valid word
+					for(int z = 0; z < permutations.size(); z++) {
+						std::string tempS = permutations.at(z);	
+
+					}
+				}
+				//update best option
+				if(best.score < calculateScore(temp)) {
+					best = temp;
 				}
 			}
-			//update best option
 		}
 	}
 	for(int c = top; c <= bottom; c++) {
@@ -176,14 +184,18 @@ move Game::findBest() {
 			int index = r*DIMENSION+c;
 			tile *tile = board[index].spaceTile;
 			if(tile != NULL) {
+				move temp = {NULL, 0, -1, -1, 0};
 				for(int l = 7; l >= 1; l--) {
-					//look 7 left and 7 right of tile
+					//look l left and l right of tile
 					std::vector<std::string> permutations = getPermutations(l, index, l, 7-l);
 					std::vector<std::string> permutations2 = getPermutations(l, index, 7-l, l);
 					permutations.insert(permutations.begin(), permutations2.begin(), permutations2.end());
 				}
+				//update best option
+				if(best.score < calculateScore(temp)) {
+					best = temp;
+				}
 			}
-			//update best option
 		}
 	}
 	updateBoundingBox(best);
@@ -192,7 +204,7 @@ move Game::findBest() {
 
 void Game::makeMove(player* player) {
 	move move;
-	if(currPlayer == 3) {
+	if(currPlayer == numPlayers-1) {
 		//bot's turn
 		move = findBest();
 	} else {

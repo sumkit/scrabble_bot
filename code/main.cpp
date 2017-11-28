@@ -5,24 +5,21 @@
 #include "main.h"
 #include "game.h"
 
-player* createPlayers(int numPlayers) {
-  player* players = (player *) malloc(numPlayers*sizeof(player));
+void createPlayers(int numPlayers, player *players) {
   for(int i = 0; i < numPlayers-1; i++) {
     // players[i].name = "Player "+std::to_string(i+1);
-    players[i].name = "Player";
     players[i].score = 0;
     players[i].tiles = (tile *) malloc(7*sizeof(tile));
     players[i].numTiles = 0; //need to fill with 7
+    players[i].name = (char *) "Player";
   }
-  players[numPlayers-1].name = "Bot";
+  players[numPlayers-1].name = (char *) "Bot";
   players[numPlayers-1].score = 0;
   players[numPlayers-1].tiles = (tile *) malloc(7*sizeof(tile));
   players[numPlayers-1].numTiles = 0; //need to fill with 7
-  return players;
 }
 
-tile* createTiles() {
-  tile* tiles = (tile *) malloc(NUMTILES*sizeof(tile));
+void createTiles(tile *tiles) {
 	int tileIndex = 0;
 	for(int i = 0; i < 2; i++) {
 		tile t;
@@ -202,27 +199,48 @@ tile* createTiles() {
 	t_z.letter = 'z';
 	t_z.points = 10;
 	tiles[tileIndex] = t_z;
+}
 
-	return tiles;
+void distributeTiles(int numPlayers, player* players, tile* tiles) {
+	for(int i = 0; i < numPlayers; i++) {
+		for(int t = 0; t < 7; t++) {
+			players[i].tiles[t] = tiles[(7*i)+t];
+		}
+	}
 }
 
 int main(int argc, char** argv)
 {
-  int numPlayers = 3; //TODO process input for number of players
-  player* players = createPlayers(numPlayers); 
-  tile* tiles = createTiles();
+  int numPlayers = 2; //TODO process input for number of players
+  player* players = (player *) malloc(numPlayers*sizeof(player));
+  createPlayers(numPlayers, players); 
+  
+  tile* tiles = (tile *) malloc(NUMTILES*sizeof(tile));
+  printf("1 %d\n", &tiles);
+  createTiles(tiles);
+  printf("1.5 %d\n", &tiles);
   space* board = (space *) calloc(DIMENSION*DIMENSION, sizeof(board));
-  Game game(players, tiles, board);
+  Game game(players, tiles, board, numPlayers);
   game.init();
-  while(1) {
+
+  /*while(1) {
     game.makeMove(game.getCurrentPlayer());
 
     //TODO update GUI
 
     if(game.gameOver()) break;
     else game.nextPlayer();
-  }
+  } */
   
+  tile t1 = {'i', 1};
+  tile t2 = {'s', 1};
+  tile t3 = {'t', 1};
+  board[112].spaceTile = &t1;
+  board[111].spaceTile = &t2;
+  board[113].spaceTile = &t3;
+  players[0].score = 3;
+  game.nextPlayer();
+  game.makeMove(game.getCurrentPlayer());
   //compute winner
   int maxScore = 0;
   player winner;
@@ -233,10 +251,8 @@ int main(int argc, char** argv)
   }
 
   //announce winner in GUI
-  
   free(tiles);
   free(board);
   free(players);
-
   return 0;
 }
